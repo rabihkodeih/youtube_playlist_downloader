@@ -5,4 +5,4 @@ This is a simple python script which can be used to download a playlist as a set
 Prerquisites:
     
     youtube-dl command line
-    ffprobe / avprobe (man: libav)
+    ffprobe / avprobe (mac osX: libav will install both)
