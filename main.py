@@ -124,7 +124,7 @@ def get_playlist_videos(youtube, playlist_id):
     return video_data
 
 
-def download_video_as_mp3(video_url, target_path, ordinal_number=None):
+def download_video_as_mp3(video_url, target_path, audio_quality='bestaudio', ordinal_number=None):
     """
     This function will download the supplied video_url into an mp3 file in the supplied target_path.
     """
@@ -132,12 +132,12 @@ def download_video_as_mp3(video_url, target_path, ordinal_number=None):
         ordinal_number = ''
     else:
         ordinal_number = '%s_' % ('0'* (4 - len(str(ordinal_number))) + str(ordinal_number),)
-    download_command = 'youtube-dl --no-playlist --format worstaudio --extract-audio --audio-format mp3 --audio-quality 5 -o "%s/%s%%(title)s.%%(ext)s" %s'
-    download_command = download_command % (target_path, ordinal_number, video_url)
+    download_command = 'youtube-dl --no-playlist --format %s --extract-audio --audio-format mp3 --audio-quality 5 -o "%s/%s%%(title)s.%%(ext)s" %s'
+    download_command = download_command % (audio_quality, target_path, ordinal_number, video_url)
     os.system(download_command)
         
 
-def download_playlist_audio(videos, target_path):
+def download_playlist_audio(videos, target_path, audio_quality):
     """
     This function will simply download all the vedios specified in videos and convert them in to mp3
     into the supplied target_path
@@ -153,7 +153,7 @@ def download_playlist_audio(videos, target_path):
         video_url = video['url']
         if video_url not in meta:
             print '%s / %s : downloading/converting audio of video_url "%s"' % (ith + 1, len(videos), video_url)
-            download_video_as_mp3(video_url, target_path, ordinal_number=ith + 1)
+            download_video_as_mp3(video_url, target_path, audio_quality=audio_quality, ordinal_number=ith + 1)
             meta[video_url] = 'downloaded'
             pickle.dump(meta, open(meta_path, 'wb'))
         else:
@@ -164,14 +164,15 @@ def download_playlist_audio(videos, target_path):
 
 if __name__ == '__main__':
     print 'commencing...\n\n'
-    PLAYLIST_TITLE = 'Eckhart Tolle'
+    PLAYLIST_TITLE = 'Thrash Metal 1' # 'Thrash Metal 1', 'Eckhart Tolle'
+    AUDIO_QUALITY = 'bestaudio' # 'bestaudio', 'worstaudio'
     credentials = get_app_credentials()
     youtube = get_youtube_api_object(credentials)
     channel_id = get_my_channel_id(youtube)
     playlist_id = get_playlist_id_by_title(youtube, channel_id, PLAYLIST_TITLE)
     videos = get_playlist_videos(youtube, playlist_id)
     target_path = os.path.join(PLAYLIST_ROOT_FOLDER, PLAYLIST_TITLE)
-    download_playlist_audio(videos, target_path)
+    download_playlist_audio(videos, target_path, AUDIO_QUALITY)
     print '\n\n...done'
     
     
