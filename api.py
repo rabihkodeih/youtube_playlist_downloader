@@ -79,15 +79,34 @@ def get_playlists_data(youtube, channel_id):
     @param channel_id: the channel id
     returns: a list of playlist info objects
     '''
-    result = youtube.playlists().list(part='snippet', channelId=channel_id).execute()
+    next_page_token = True
     playlists_data = []
-    items = result.get('items', [])
-    for item in items:
-        data = {}
-        data['id'] = item.get('id', None)
-        data['title'] = item.get('snippet', {}).get('title', None) 
-        playlists_data.append(data)
+    while next_page_token:    
+        params = {'part':"snippet", 'channelId':channel_id}
+        if next_page_token != True:
+            params['pageToken'] = next_page_token
+        result = youtube.playlists().list(**params).execute()
+        next_page_token = result.get('nextPageToken', None)
+        items = result.get('items', [])
+        for item in items:
+            data = {}
+            data['id'] = item.get('id', None)
+            data['title'] = item.get('snippet', {}).get('title', None) 
+            playlists_data.append(data)
     return playlists_data
+
+
+def show_all_playlists(youtube, channel_id):
+    '''
+    Show all playlists in a channel
+    @param youtube: the main youtube resource object
+    @param channel_id: the channel id
+    returns: None
+    '''
+    items = get_playlists_data(youtube, channel_id)
+    print 'Channel with id "%s" has the following playlists:' % channel_id
+    for item in items:
+        pprint(item)
 
 
 def get_playlist_id_by_title(youtube, channel_id, playlist_title):
@@ -135,7 +154,6 @@ def get_playlist_videos(youtube, playlist_id):
             video_data.append(data)
     return video_data
 
-
 def download_video_as_mp3(video_url, target_path, audio_quality='bestaudio', ordinal_number=None):
     '''
     This function will download the supplied video_url into an mp3 file in the supplied target_path.
@@ -171,10 +189,60 @@ def download_playlist_audio(videos, target_path, audio_quality):
         meta = {}
     for ith, video in enumerate(videos):
         video_url = video['url']
+        video_title = video['title']
+        print '%s / %s : downloading/converting audio of video "%s"' % (ith + 1, len(videos), video_title)
         if video_url not in meta:
-            print '%s / %s : downloading/converting audio of video_url "%s"' % (ith + 1, len(videos), video_url)
             download_video_as_mp3(video_url, target_path, audio_quality=audio_quality, ordinal_number=ith + 1)
             meta[video_url] = 'downloaded'
             pickle.dump(meta, open(meta_path, 'wb'))
         else:
-            print 'skipping audio of video_url "%s", already downloaded' % video_url
+            print 'skipped, already downloaded'
+
+def reset_downloads(videos, playlist_path, starting_ordinal_number, use_ordinal_numbers=True):
+    '''
+    Resets downloads in the meta data structure of a certain playlist.
+    @param videos: a list of videos having the format: [{'title':..., 'description':..., 'url':...}, ...]
+    @param playlist_path: the path of the playlist meta data structure
+    @param starting_ordinal_number: the starting number of url to starting reseting
+    @param use_ordinal_numbers: determines whether to use ordinal numbering in the list of path
+    returns: None
+    '''
+    meta_path = os.path.join(playlist_path, 'meta.bin')
+    if os.path.exists(meta_path):
+        meta = pickle.load(open(meta_path))
+    else:
+        meta = {}
+    for ith, v in enumerate(videos):
+        if not use_ordinal_numbers:
+            ordinal_number = ''
+        else:
+            ordinal_number = '%s_' % ('0'* (4 - len(str(ith + 1))) + str(ith + 1),)
+        video_url = v['url']
+        video_title = v['title']
+        print '%s  ::  %s%s' % (video_url, ordinal_number, video_title)
+        if (ith + 1) >= starting_ordinal_number:
+            print 'reset'
+            del meta[video_url]
+        else:
+            print 'skipped'
+    pickle.dump(meta, open(meta_path, 'wb'))
+            
+def report_videos(videos, use_ordinal_numbers=True):
+    '''
+    Reports all the contents of the list of videos.
+    @param videos: a list of videos having the format: [{'title':..., 'description':..., 'url':...}, ...]
+    @param use_ordinal_numbers: determines whether to use ordinal numbering in the list of path
+    returns: None
+    '''
+    for ith, v in enumerate(videos):
+        if not use_ordinal_numbers:
+            ordinal_number = ''
+        else:
+            ordinal_number = '%s_' % ('0'* (4 - len(str(ith + 1))) + str(ith + 1),)
+        video_url = v['url']
+        video_title = v['title']
+        print '%s  ::  %s%s' % (video_url, ordinal_number, video_title)
+    
+    
+    
+            

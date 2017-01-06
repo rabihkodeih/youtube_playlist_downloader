@@ -5,7 +5,8 @@ Created on Dec 20, 2016
 '''
 
 import os
-from api import get_app_credentials
+from api import get_app_credentials, report_videos, reset_downloads,\
+    show_all_playlists
 from api import get_youtube_api_object
 from api import get_my_channel_id
 from api import get_playlist_id_by_title
@@ -18,16 +19,23 @@ os.environ['PATH'] = '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
 
 
 if __name__ == '__main__':
+    
     print 'commencing...\n\n'
-    PLAYLIST_TITLE = 'Thrash Metal 1' # 'Thrash Metal 1', 'Eckhart Tolle'
-    AUDIO_QUALITY = 'bestaudio' # 'bestaudio', 'worstaudio'
+    PLAYLIST_TITLE = 'Al-3irfan'
+    AUDIO_QUALITY = 'worstaudio' # 'bestaudio', 'worstaudio'
     credentials = get_app_credentials()
     youtube = get_youtube_api_object(credentials)
     channel_id = get_my_channel_id(youtube)
+    show_all_playlists(youtube, channel_id)
+    exit()
     playlist_id = get_playlist_id_by_title(youtube, channel_id, PLAYLIST_TITLE)
     videos = get_playlist_videos(youtube, playlist_id)
+    from pprint import pprint
+    pprint(videos)
     target_path = os.path.join(PLAYLIST_ROOT_FOLDER, PLAYLIST_TITLE)
-    download_playlist_audio(videos, target_path, AUDIO_QUALITY)
+    #download_playlist_audio(videos, target_path, AUDIO_QUALITY)
+    #report_videos(videos)
+    #reset_downloads(videos, target_path, starting_ordinal_number=17)
     print '\n\n...done'
     
     
