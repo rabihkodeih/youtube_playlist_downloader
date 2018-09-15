@@ -4,13 +4,12 @@ Created on Dec 21, 2016
 @author: rabihkodeih
 '''
 
-import httplib2
 import os
 import sys
+import httplib2
 import cPickle as pickle
 from pprint import pprint  # @UnusedImport
     
-
 from googleapiclient.discovery import build
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
@@ -172,12 +171,13 @@ def download_video_as_mp3(video_url, target_path, audio_quality='bestaudio', ord
     os.system(download_command)
         
 
-def download_playlist_audio(videos, target_path, audio_quality):
+def download_playlist_audio(videos, target_path, audio_quality, use_ordinal_numbers=True):
     '''
     This function will simply download all the given videos and convert them to mp3 files.
     @param videos: a list of videos having the format: [{'title':..., 'description':..., 'url':...}, ...]
     @param target_path: the root path where all files will be written to
     @param audio_quality: one of 'bestaudio' or 'worstaudio'
+    @param use_ordinal_numbers: set to False if you don't wish to use ordinal numbers in the output file names
     returns: None
     '''
     meta_path = os.path.join(target_path, 'meta.bin')
@@ -192,7 +192,10 @@ def download_playlist_audio(videos, target_path, audio_quality):
         video_title = video['title']
         print '%s / %s : downloading/converting audio of video "%s"' % (ith + 1, len(videos), video_title)
         if video_url not in meta:
-            download_video_as_mp3(video_url, target_path, audio_quality=audio_quality, ordinal_number=ith + 1)
+            if use_ordinal_numbers:
+                download_video_as_mp3(video_url, target_path, audio_quality=audio_quality, ordinal_number=ith + 1)
+            else:
+                download_video_as_mp3(video_url, target_path, audio_quality=audio_quality)
             meta[video_url] = 'downloaded'
             pickle.dump(meta, open(meta_path, 'wb'))
         else:
