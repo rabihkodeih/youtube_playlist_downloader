@@ -22,6 +22,5 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 YOUTUBE_READ_WRITE_SCOPE = "https://www.googleapis.com/auth/youtube"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
-PLAYLIST_ROOT_FOLDER = '/Users/rabihkodeih/Documents/workspace/pytube/downloads/'
-
-
+PLAYLIST_ROOT_FOLDER =\
+    '/Users/rabihkodeih/Documents/workspace/pytube/downloads/'
